@@ -1,8 +1,8 @@
 import axios from 'axios'
 // import config from "../config/index"
 
-const baseUrl = process.env.NODE_ENV === 'development' ? '/api' : ''
-// const baseUrl = '/api'
+// const baseUrl = process.env.NODE_ENV === 'development' ? config.baseUrl.dev : config.baseUrl.pro
+const baseUrl = 'http://localhost:3000'
 class HttpRequest {
    constructor(baseUrl) {
       this.baseUrl = baseUrl
@@ -43,7 +43,7 @@ class HttpRequest {
       options = { ...this.getInsideConfig(), ...options }
       console.log(options)
       this.interceptors(instance)
-      instance(options)
+      return instance(options)
    }
 }
 

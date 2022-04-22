@@ -32,11 +32,11 @@
         <span>清空列表</span>
       </a>
     </div>
-    <div class="music-list">
+    <!-- <div class="music-list">
       <span class="songlist-name">歌曲</span>
       <span class="songlist-author">歌手</span>
       <span class="songlist-time">时长</span>
-    </div>
+    </div> -->
     <div class="music-table">
       <!-- <el-table :data="songsData" stripe style="width: 100%">
         <el-table-column show-overflow-tooltip v-for="item in songsData" :key="item.name" :label="item.label"
@@ -46,10 +46,18 @@
           </template>
         </el-table-column>
       </el-table> -->
-      <el-table :data="tableData" stripe style="width: 100%">
-        <el-table-column prop="date" label="Date" width="180" />
-        <el-table-column prop="name" label="Name" width="180" />
-        <el-table-column prop="address" label="Address" />
+      <el-table :data="songs" style="width: 100%" @row-click="playMusic" height="800">
+        <el-table-column prop="number" label=" " width="40px" />
+        <el-table-column prop="name" label="歌曲" min-width="60%" />
+        <el-table-column prop="singer" label="歌手" min-width="20%" />
+        <el-table-column prop="time" label="时长" min-width="15%" />
+        <el-table-column fixed="right" label="移除" width="120">
+          <template #default="scope">
+            <el-button type="text" size="small" @click.prevent="deleteRow(scope.$index)">
+              Delete
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
   </div>
@@ -57,37 +65,9 @@
 
 
 <script >
-import {
-  SuccessFilled,
-  CirclePlus,
-  Download,
-  Delete,
-  FolderDelete,
-} from "@element-plus/icons-vue";
-import { getPlayList } from "../../api/data";
-
-// const tableData = [
-//   {
-//     date: '2016-05-03',
-//     name: 'Tom',
-//     address: 'No. 189, Grove St, Los Angeles',
-//   },
-//   {
-//     date: '2016-05-02',
-//     name: 'Tom',
-//     address: 'No. 189, Grove St, Los Angeles',
-//   },
-//   {
-//     date: '2016-05-04',
-//     name: 'Tom',
-//     address: 'No. 189, Grove St, Los Angeles',
-//   },
-//   {
-//     date: '2016-05-01',
-//     name: 'Tom',
-//     address: 'No. 189, Grove St, Los Angeles',
-//   },
-// ]
+import { SuccessFilled, CirclePlus, Download, Delete, FolderDelete } from "@element-plus/icons-vue";
+import { getData, getMusic } from "../../api/data";
+import vueEvent from '../assets/mitt'
 
 export default {
   components: {
@@ -97,16 +77,84 @@ export default {
     FolderDelete,
     SuccessFilled
   },
-  mounted () {
-    getPlayList()
-      .then(({ data: res }) => {
-        // this.songsData = res.songs
-        console.log("res", res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  data () {
+    return {
+      songs: [],
+      musicUrl: ""
+    }
   },
+  methods: {
+    addZero (s) {
+      return s < 10 ? '0' + s : s
+    },
+    format (value) {
+      let minute = Math.floor(value / 600)
+      let second = Math.floor(value % 60)
+      return `${this.addZero(minute)}:${this.addZero(second)}`
+    },
+    deleteRow (index) {
+      console.log(index)
+      this.songs.splice(index, 1)
+      for (let i = 0; i < this.songs.length; i++) {
+        this.songs[i].number = i + 1
+      }
+    },
+    playMusic (row) {
+      // console.log(row.id, event, column)
+      getMusic(row.id).then(({ data: res }) => {
+        this.musicUrl = res.data[0].url
+      })
+      vueEvent.emit('go', this.musicUrl)
+    }
+  },
+  mounted () {
+    //  console.log("mounted开始")
+    //  console.log("mounted开始")
+  },
+  created () {
+    //  console.log("created开始")
+    //  console.log(getData)
+    getData()
+      .then(res => {
+        // this.songsData = res.songs
+        let { songs } = res.data.result
+        //   if (code == 200) {
+        //     this.songs = songs
+        //   }
+        this.songs = songs
+        for (let i = 0; i < songs.length; i++) {
+          let a = ""
+          for (let j = 0; j < songs[i].artists.length; j++) {
+            a += songs[i].artists[j].name
+            if (j >= 2) {
+              a += " ..."
+              break;
+            }
+            if (j + 1 !== songs[i].artists.length) {
+              a += " / "
+            }
+          }
+          songs[i].singer = a
+        }
+        for (let i = 0; i < songs.length; i++) {
+          songs[i].time = this.format(songs[i].duration % 3600)
+          //  songs[i].duration % 3600 | this.format
+          //  console.log(songs[i].time)
+          songs[i].number = i + 1
+        }
+
+        //   console.log("res", res);
+        //   console.log(songs);
+      })
+      .catch(err => {
+        console.log('error' + err);
+      });
+    //  console.log("created结束")
+    vueEvent.on('search', musicInformation => {
+      this.songs = musicInformation
+      console.log(this.songs)
+    })
+  }
 };
 </script>
 
@@ -152,5 +200,8 @@ export default {
 }
 .songlist-time {
   width: 60px;
+}
+.el-table__row {
+  height: 68px;
 }
 </style>

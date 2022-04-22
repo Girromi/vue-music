@@ -7,10 +7,12 @@
       <el-header height="44px">
         <common-head />
       </el-header>
-      <el-main>
+      <el-main height="70%">
         <common-content />
       </el-main>
-      <el-footer>Footer</el-footer>
+      <el-footer>
+        <common-foot />
+      </el-footer>
     </el-container>
   </el-container>
 </template>
@@ -19,12 +21,14 @@
 import CommonAside from '../src/components/CommonAside.vue'
 import CommonHead from '../src/components/CommonHead.vue'
 import CommonContent from '../src/components/CommonContent.vue'
+import CommonFoot from '../src/components/CommonFoot.vue'
 export default {
   name: 'Home',
   components: {
     CommonAside,
     CommonHead,
-    CommonContent
+    CommonContent,
+    CommonFoot
   },
   data () {
     return {}

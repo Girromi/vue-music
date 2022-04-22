@@ -8,4 +8,4 @@ import http from 'axios'
 
 createApp(App).config.globalProperties.$http = http
 
-createApp(App).use(router).use(ElementPlus).use(router).mount('#app')
+createApp(App).use(router).use(ElementPlus).mount('#app')
